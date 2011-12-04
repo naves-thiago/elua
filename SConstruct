@@ -79,6 +79,7 @@ toolchain_list['devkitarm'] = toolchain_list['arm-eabi-gcc']
 # The first toolchain in the toolchains list is the default one
 # (the one that will be used if none is specified)
 platform_list = {  
+  'at91sam7s' : { 'cpus' : [ 'AT91SAM7S256' ], 'toolchains' : [ 'arm-gcc', 'codesourcery', 'devkitarm', 'arm-eabi-gcc' ] },
   'at91sam7x' : { 'cpus' : [ 'AT91SAM7X256', 'AT91SAM7X512' ], 'toolchains' : [ 'arm-gcc', 'codesourcery', 'devkitarm', 'arm-eabi-gcc' ] },
   'lm3s' : { 'cpus' : [ 'LM3S1968', 'LM3S8962', 'LM3S6965', 'LM3S6918', 'LM3S9B92', 'LM3S9D92' ], 'toolchains' : [ 'arm-gcc', 'codesourcery', 'devkitarm', 'arm-eabi-gcc' ] },
   'str9' : { 'cpus' : [ 'STR912FAW44' ], 'toolchains' : [ 'arm-gcc', 'codesourcery', 'devkitarm', 'arm-eabi-gcc' ] },
@@ -114,6 +115,7 @@ board_list = { 'SAM7-EX256' : [ 'AT91SAM7X256', 'AT91SAM7X512' ],
                'MBED' : ['LPC1768'],
                'MIZAR32' : [ 'AT32UC3A0128', 'AT32UC3A0256', 'AT32UC3A0512', ],
                'NETDUINO' : [ 'AT91SAM7X512' ],
+               'AT91SAM7S-EK' : [ 'AT91SAM7S256' ],
             }
 
 cpu_list = sum([board_list[i] for i in board_list],[])
