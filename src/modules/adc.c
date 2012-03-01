@@ -226,6 +226,12 @@ static int adc_insertsamples( lua_State* L )
   
   return 0;
 }
+
+static int adc_setup_awd( lua_State* L )
+{
+	setup_awd();
+	return 0;
+}
 #endif
 
 // Module function map
@@ -233,6 +239,7 @@ static int adc_insertsamples( lua_State* L )
 #include "lrodefs.h"
 const LUA_REG_TYPE adc_map[] = 
 {
+  { LSTRKEY( "setup_awd" ), LFUNCVAL( adc_setup_awd ) },
   { LSTRKEY( "sample" ), LFUNCVAL( adc_sample ) },
   { LSTRKEY( "maxval" ), LFUNCVAL( adc_maxval ) },
   { LSTRKEY( "setclock" ), LFUNCVAL( adc_setclock ) },
