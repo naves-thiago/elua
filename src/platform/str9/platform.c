@@ -491,6 +491,12 @@ void platform_adc_stop( unsigned id )
 
 void ADC_IRQHandler( void )
 {
+  if ( ADC_GetFlagStatus( ADC_FLAG_AWD ) )
+  {    
+    printf("ADW IRQ!\n%d\n", ADC_GetConversionValue(0));
+    ADC_ClearFlag(ADC_FLAG_AWD);
+  }
+
   elua_adc_dev_state *d = adc_get_dev_state( 0 );
   elua_adc_ch_state *s;
 
@@ -533,6 +539,7 @@ void ADC_IRQHandler( void )
   }
 
   VIC0->VAR = 0xFF;
+//  ADC_ConversionCmd( ADC_Conversion_Start ); <-- Test Code
 }
 
 static void platform_setup_adcs()
@@ -564,23 +571,15 @@ static void platform_setup_adcs()
 
 void setup_awd()
 {
-	#if 0
-	// ADC->CR = 1<1; // Power ON
-	ADC->HTR = 1000; // Set High Threshold to 1000
-	ADC->CCR = 2; // Configure analog watchdog to trigger when ADC channel 0 is less then the high trashhold
-	ADC->CR = 1<<15 | 1<<9 | 1<1 | 1; // Clear end of conversion & Power on & enable interrupt & start conversion
-	
-	#endif
-	
-	adc_init_ch_state( 0 );
-	
-	// Change pin function
-	GPIO_ANAPinConfig( GPIO_ANAChannel0, ENABLE );
-  
-	VIC_Config(ADC_ITLine, VIC_IRQ, 0);
-	VIC_ITCmd(ADC_ITLine, ENABLE);
-	ADC_InitTypeDef ADC_InitStructure;
-	ADC_StructInit(&ADC_InitStructure);
+  adc_init_ch_state( 0 );
+
+  // Change pin function
+  GPIO_ANAPinConfig( GPIO_ANAChannel0, ENABLE );
+
+  VIC_Config(ADC_ITLine, VIC_IRQ, 0);
+  VIC_ITCmd(ADC_ITLine, ENABLE);
+  ADC_InitTypeDef ADC_InitStructure;
+  ADC_StructInit(&ADC_InitStructure);
 
   /* Configure the ADC  structure in continuous mode conversion */
   ADC_DeInit();             /* ADC Deinitialization */
@@ -606,60 +605,11 @@ void setup_awd()
   ADC_ClearFlag( ADC_FLAG_AWD );
   ADC_ConversionCmd( ADC_Conversion_Start );
   
-  
+  // Enable interrupts
   ADC_ITConfig(ADC_IT_ECV, ENABLE);
+  ADC_ITConfig(ADC_IT_AWD, ENABLE);
 
   platform_adc_set_clock( 0, 0 );
-	
-	#if 0
-	// Half working
-	while (1)
-	{
-	while (((ADC->CRR & 1) == 0) && ((ADC->CR & 1<<14) == 0)  && ((ADC->CR & 1<<15) == 0));
-	
-	//Clear event flag
-	ADC_ClearFlag( ADC_FLAG_AWD );
-
-	//Print debug message
-	printf("ADW!\n%d\n", ADC_GetConversionValue(0));
-
-	// Clear event flag
-	ADC_ClearFlag( ADC_FLAG_AWD );
-	
-	// Clear end of conversion flag
-	ADC_ClearFlag( ADC_FLAG_ECV );
-	
-	ADC_ConversionCmd( ADC_Conversion_Start );
-	}
-	#endif 
-	
-	#if 1
-	// wait for a AWD event
-	while (1)
-	{
-		if (ADC->CR & 1<<15) // End of conversion
-		{
-			if (ADC->CRR & 1) // Analog watchdog flag
-			{
-				// Clear event flag
-				ADC_ClearFlag( ADC_FLAG_AWD );
-	
-				// Print debug message
-				printf("ADW!\n%d\n", ADC_GetConversionValue(0));
-			}
-			ADC_ClearFlag( ADC_FLAG_ECV ); // Clear end of conversion flag
-			ADC_ConversionCmd( ADC_Conversion_Start );
-		}
-		
-		//while (((ADC->CRR & 1) == 0) && ((ADC->CR & 1<<14) == 0)  && ((ADC->CR & 1<<15) == 0));
-	
-		// Clear event flag
-		//ADC_ClearFlag( ADC_FLAG_AWD );
-	
-		// Print debug message
-		//printf("ADW!\n%d\n", ADC_GetConversionValue(0));
-	}
-	#endif
 }
 
 // NOTE: On this platform, there is only one ADC, clock settings apply to the whole device
