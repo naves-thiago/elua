@@ -11,6 +11,7 @@
 #include "91x_wiu.h"
 #include "91x_tim.h"
 #include "91x_rtc.h"
+#include "91x_adc.h"
 
 #include <stdio.h>
 
@@ -303,6 +304,39 @@ static int int_rtc_alarm_get_flag( elua_int_resnum resnum, int clear )
   return status;
 }
 // ****************************************************************************
+// Analog Watchdog Interrupt
+
+static int int_awd_get_status( elua_int_resnum resnum )
+{
+  return (ADC->CR & 1<<9) != 0;
+}
+
+static int int_awd_set_status( elua_int_resnum resnum, int status )
+{
+  int prev = int_awd_get_status( resnum ); 
+
+  if (status == PLATFORM_CPU_ENABLE)
+  {
+    ADC->CR |= 1<<9;          // Enable AWD Interrupt
+    VIC0->INTER  |= (1<<15);  // Enable AWD Interrupt ( VIC0.15 )
+  }
+  else
+    ADC->CR &= ~(1<<9);       // Disable AWD interrupt
+  
+  return prev;
+}
+
+static int int_awd_get_flag( elua_int_resnum resnum, int clear )
+{
+  int status = ADC_GetFlagStatus(ADC_FLAG_AWD) == SET;
+
+  if( clear )
+    // Clear interrupt flag
+    ADC_ClearFlag(ADC_FLAG_AWD);
+
+  return status;
+}
+// ****************************************************************************
 // Interrupt initialization
 
 void platform_int_init()
@@ -360,6 +394,7 @@ const elua_int_descriptor elua_int_table[ INT_ELUA_LAST ] =
   { int_gpio_posedge_set_status, int_gpio_posedge_get_status, int_gpio_posedge_get_flag },
   { int_gpio_negedge_set_status, int_gpio_negedge_get_status, int_gpio_negedge_get_flag },
   { int_tmr_match_set_status, int_tmr_match_get_status, int_tmr_match_get_flag },
-  { int_rtc_alarm_set_status, int_rtc_alarm_get_status, int_rtc_alarm_get_flag }
+  { int_rtc_alarm_set_status, int_rtc_alarm_get_status, int_rtc_alarm_get_flag },
+  { int_awd_set_status, int_awd_get_status, int_awd_get_flag }
 };
 

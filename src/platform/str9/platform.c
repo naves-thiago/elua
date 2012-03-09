@@ -491,10 +491,18 @@ void platform_adc_stop( unsigned id )
 
 void ADC_IRQHandler( void )
 {
+  // Analog Watchdog
   if ( ADC_GetFlagStatus( ADC_FLAG_AWD ) )
-  {    
-    printf("ADW IRQ!\n%d\n", ADC_GetConversionValue(0));
+  { 
+    // printf("ADW IRQ!\n%d\n", ADC_GetConversionValue(0));
     ADC_ClearFlag(ADC_FLAG_AWD);
+	
+	// If the AWD is still enabled, add an elua interrupt
+    if ( ADC->CR & (1<<9) )
+	  cmn_int_handler( INT_AWD, 0 );
+	
+	// Disable AWD interrupt
+	ADC->CR &= ~(1<<9);
   }
 
   elua_adc_dev_state *d = adc_get_dev_state( 0 );
@@ -539,7 +547,10 @@ void ADC_IRQHandler( void )
   }
 
   VIC0->VAR = 0xFF;
-//  ADC_ConversionCmd( ADC_Conversion_Start ); <-- Test Code
+  
+  // If analog watchdog is enabled, start conversion again
+  if ( ADC->CR & (1<<9) )
+	ADC_ConversionCmd( ADC_Conversion_Start );
 }
 
 static void platform_setup_adcs()
@@ -569,7 +580,7 @@ static void platform_setup_adcs()
   platform_adc_set_clock( 0, 0 );
 }
 
-void setup_awd()
+void platform_enable_awd()
 {
   adc_init_ch_state( 0 );
 
@@ -583,12 +594,14 @@ void setup_awd()
 
   /* Configure the ADC  structure in continuous mode conversion */
   ADC_DeInit();             /* ADC Deinitialization */
-  ADC_InitStructure.ADC_Channel_0_Mode = ADC_LowThreshold_Conversion;
   ADC_InitStructure.ADC_Scan_Mode = ENABLE;
   ADC_InitStructure.ADC_Conversion_Mode = ADC_Single_Mode;
-  ADC_InitStructure.ADC_WDG_High_Threshold = 500;
-  ADC_InitStructure.ADC_WDG_Low_Threshold = 500;
-  
+  ADC_InitStructure.ADC_WDG_High_Threshold = ADC->HTR;
+  ADC_InitStructure.ADC_WDG_Low_Threshold = ADC->LTR;
+//  ADC_InitStructure.ADC_WDG_High_Threshold = 0;
+//  ADC_InitStructure.ADC_WDG_Low_Threshold = 500;
+
+  ADC_InitStructure.ADC_Channel_0_Mode = ADC_LowThreshold_Conversion;
   ADC_InitStructure.ADC_Channel_1_Mode = ADC_No_Conversion;
   ADC_InitStructure.ADC_Channel_2_Mode = ADC_No_Conversion;
   ADC_InitStructure.ADC_Channel_3_Mode = ADC_No_Conversion;
@@ -610,6 +623,23 @@ void setup_awd()
   ADC_ITConfig(ADC_IT_AWD, ENABLE);
 
   platform_adc_set_clock( 0, 0 );
+}
+
+void platform_disable_awd()
+{
+	ADC->CR &= ~(1<<9);  // Disable AWD interrupt
+}
+
+/*
+void platform_awd_set_high_threshold( u16 threshold )
+{
+  ADC->HTR = threshold & 0x03FF;
+}
+*/
+
+void platform_awd_set_low_threshold( u16 threshold )
+{
+  ADC->LTR = threshold & 0x03FF;
 }
 
 // NOTE: On this platform, there is only one ADC, clock settings apply to the whole device

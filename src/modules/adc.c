@@ -227,11 +227,23 @@ static int adc_insertsamples( lua_State* L )
   return 0;
 }
 
-static int adc_setup_awd( lua_State* L )
+static int adc_enable_awd( lua_State* L )
 {
-	setup_awd();
-	return 0;
+  platform_enable_awd();
+  return 0;
 }
+
+static int adc_disable_awd( lua_State* L )
+{
+  platform_disable_awd();
+  return 0;
+}
+
+static int adc_awd_set_low_threshold( lua_State* L )
+{
+  platform_awd_set_low_threshold( luaL_checkinteger(L, 1) );
+}
+
 #endif
 
 // Module function map
@@ -239,7 +251,9 @@ static int adc_setup_awd( lua_State* L )
 #include "lrodefs.h"
 const LUA_REG_TYPE adc_map[] = 
 {
-  { LSTRKEY( "setup_awd" ), LFUNCVAL( adc_setup_awd ) },
+  { LSTRKEY( "enable_awd" ), LFUNCVAL( adc_enable_awd ) },
+  { LSTRKEY( "disable_awd" ), LFUNCVAL( adc_disable_awd ) },
+  { LSTRKEY( "set_awd_low_threshold" ), LFUNCVAL( adc_awd_set_low_threshold ) },
   { LSTRKEY( "sample" ), LFUNCVAL( adc_sample ) },
   { LSTRKEY( "maxval" ), LFUNCVAL( adc_maxval ) },
   { LSTRKEY( "setclock" ), LFUNCVAL( adc_setclock ) },
