@@ -495,7 +495,6 @@ void ADC_IRQHandler( void )
   // Analog Watchdog
   if ( ADC_GetFlagStatus( ADC_FLAG_AWD ) )
   { 
-    //printf("ADW IRQ!\n%d\n", ADC_GetConversionValue(0));
     ADC_ClearFlag(ADC_FLAG_AWD);
 	
 	// If the AWD is still enabled, add an elua interrupt
@@ -583,7 +582,6 @@ static void platform_setup_adcs()
 
 volatile void platform_enable_awd(u8 channel, u16 conversion_type)
 {
-  //printf( "ch: %d\ntype: %d\nth: %d\n", channel, conversion_type, ADC->LTR);
   adc_init_ch_state( 0 );
 
   // Change pin function
@@ -598,8 +596,6 @@ volatile void platform_enable_awd(u8 channel, u16 conversion_type)
   ADC_DeInit();             /* ADC Deinitialization */
   ADC_InitStructure.ADC_Scan_Mode = ENABLE;
   ADC_InitStructure.ADC_Conversion_Mode = ADC_Single_Mode;
-//  ADC_InitStructure.ADC_WDG_High_Threshold = ADC->HTR;
-//  ADC_InitStructure.ADC_WDG_Low_Threshold = ADC->LTR;
 
   ADC_InitStructure.ADC_WDG_High_Threshold = awd_threshold;
   ADC_InitStructure.ADC_WDG_Low_Threshold = awd_threshold;
