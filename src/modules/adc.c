@@ -9,6 +9,7 @@
 #include "lrotable.h"
 #include "platform_conf.h"
 #include "elua_adc.h"
+#include "91x_adc.h"
 
 #ifdef BUILD_ADC
 
@@ -227,9 +228,10 @@ static int adc_insertsamples( lua_State* L )
   return 0;
 }
 
+// Lua: adc.enable_awd( channel, adc.LOW_THRESHOLD )
 static int adc_enable_awd( lua_State* L )
 {
-  platform_enable_awd();
+  platform_enable_awd( (u8)luaL_checkinteger(L, 1), (u16)luaL_checkinteger(L, 2) );
   return 0;
 }
 
@@ -239,9 +241,10 @@ static int adc_disable_awd( lua_State* L )
   return 0;
 }
 
-static int adc_awd_set_low_threshold( lua_State* L )
+static int adc_awd_set_threshold( lua_State* L )
 {
-  platform_awd_set_low_threshold( luaL_checkinteger(L, 1) );
+  platform_awd_set_threshold( luaL_checkinteger(L, 1) );
+  return 0;
 }
 
 #endif
@@ -253,7 +256,10 @@ const LUA_REG_TYPE adc_map[] =
 {
   { LSTRKEY( "enable_awd" ), LFUNCVAL( adc_enable_awd ) },
   { LSTRKEY( "disable_awd" ), LFUNCVAL( adc_disable_awd ) },
-  { LSTRKEY( "set_awd_low_threshold" ), LFUNCVAL( adc_awd_set_low_threshold ) },
+  { LSTRKEY( "set_awd_threshold" ), LFUNCVAL( adc_awd_set_threshold ) },
+  { LSTRKEY( "LOW_THRESHOLD" ), LNUMVAL( ADC_LowThreshold_Conversion ) },
+  { LSTRKEY( "HIGH_THRESHOLD" ), LNUMVAL( ADC_HighThreshold_Conversion ) },
+  { LSTRKEY( "NO_CONVERSION" ), LNUMVAL( ADC_No_Conversion ) },
   { LSTRKEY( "sample" ), LFUNCVAL( adc_sample ) },
   { LSTRKEY( "maxval" ), LFUNCVAL( adc_maxval ) },
   { LSTRKEY( "setclock" ), LFUNCVAL( adc_setclock ) },

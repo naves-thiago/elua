@@ -34,6 +34,7 @@ const GPIO_TypeDef* port_data[] = { GPIO0, GPIO1, GPIO2, GPIO3, GPIO4, GPIO5, GP
 #error Define VTMR_TIMER_ID to the ID of the timer used for the system timer
 #endif
 const TIM_TypeDef* str9_timer_data[] = { TIM0, TIM1, TIM2, TIM3 };
+u16 awd_threshold = 0;
 
 // System timer implementation on STR9 uses one of the physical timers (defined by
 // VTMR_TIMER_ID). This is the same timer used for VTMR implementation. Its base
@@ -494,7 +495,7 @@ void ADC_IRQHandler( void )
   // Analog Watchdog
   if ( ADC_GetFlagStatus( ADC_FLAG_AWD ) )
   { 
-    // printf("ADW IRQ!\n%d\n", ADC_GetConversionValue(0));
+    //printf("ADW IRQ!\n%d\n", ADC_GetConversionValue(0));
     ADC_ClearFlag(ADC_FLAG_AWD);
 	
 	// If the AWD is still enabled, add an elua interrupt
@@ -580,8 +581,9 @@ static void platform_setup_adcs()
   platform_adc_set_clock( 0, 0 );
 }
 
-void platform_enable_awd()
+volatile void platform_enable_awd(u8 channel, u16 conversion_type)
 {
+  //printf( "ch: %d\ntype: %d\nth: %d\n", channel, conversion_type, ADC->LTR);
   adc_init_ch_state( 0 );
 
   // Change pin function
@@ -596,12 +598,14 @@ void platform_enable_awd()
   ADC_DeInit();             /* ADC Deinitialization */
   ADC_InitStructure.ADC_Scan_Mode = ENABLE;
   ADC_InitStructure.ADC_Conversion_Mode = ADC_Single_Mode;
-  ADC_InitStructure.ADC_WDG_High_Threshold = ADC->HTR;
-  ADC_InitStructure.ADC_WDG_Low_Threshold = ADC->LTR;
-//  ADC_InitStructure.ADC_WDG_High_Threshold = 0;
-//  ADC_InitStructure.ADC_WDG_Low_Threshold = 500;
+//  ADC_InitStructure.ADC_WDG_High_Threshold = ADC->HTR;
+//  ADC_InitStructure.ADC_WDG_Low_Threshold = ADC->LTR;
 
-  ADC_InitStructure.ADC_Channel_0_Mode = ADC_LowThreshold_Conversion;
+  ADC_InitStructure.ADC_WDG_High_Threshold = awd_threshold;
+  ADC_InitStructure.ADC_WDG_Low_Threshold = awd_threshold;
+
+  //ADC_InitStructure.ADC_Channel_0_Mode = ADC_LowThreshold_Conversion;
+  ADC_InitStructure.ADC_Channel_0_Mode = ADC_No_Conversion;
   ADC_InitStructure.ADC_Channel_1_Mode = ADC_No_Conversion;
   ADC_InitStructure.ADC_Channel_2_Mode = ADC_No_Conversion;
   ADC_InitStructure.ADC_Channel_3_Mode = ADC_No_Conversion;
@@ -609,6 +613,19 @@ void platform_enable_awd()
   ADC_InitStructure.ADC_Channel_5_Mode = ADC_No_Conversion;
   ADC_InitStructure.ADC_Channel_6_Mode = ADC_No_Conversion;
   ADC_InitStructure.ADC_Channel_7_Mode = ADC_No_Conversion;
+
+  switch (channel)
+  {
+    case 0: ADC_InitStructure.ADC_Channel_0_Mode = conversion_type; break;
+    case 1: ADC_InitStructure.ADC_Channel_1_Mode = conversion_type; break;
+    case 2: ADC_InitStructure.ADC_Channel_2_Mode = conversion_type; break;
+    case 3: ADC_InitStructure.ADC_Channel_3_Mode = conversion_type; break;
+    case 4: ADC_InitStructure.ADC_Channel_4_Mode = conversion_type; break;
+    case 5: ADC_InitStructure.ADC_Channel_5_Mode = conversion_type; break;
+    case 6: ADC_InitStructure.ADC_Channel_6_Mode = conversion_type; break;
+    case 7: ADC_InitStructure.ADC_Channel_7_Mode = conversion_type; break;
+	default: break;
+  }
   
   ADC_Cmd( ENABLE );
   ADC_PrescalerConfig( 0x2 );
@@ -625,7 +642,7 @@ void platform_enable_awd()
   platform_adc_set_clock( 0, 0 );
 }
 
-void platform_disable_awd()
+volatile void platform_disable_awd()
 {
 	ADC->CR &= ~(1<<9);  // Disable AWD interrupt
 }
@@ -637,9 +654,11 @@ void platform_awd_set_high_threshold( u16 threshold )
 }
 */
 
-void platform_awd_set_low_threshold( u16 threshold )
+volatile void platform_awd_set_threshold( u16 threshold )
 {
   ADC->LTR = threshold & 0x03FF;
+  ADC->HTR = threshold & 0x03FF;
+  awd_threshold = threshold;
 }
 
 // NOTE: On this platform, there is only one ADC, clock settings apply to the whole device
