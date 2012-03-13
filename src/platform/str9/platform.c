@@ -470,6 +470,7 @@ timer_data_type platform_timer_read_sys()
 #ifdef BUILD_ADC
 
 ADC_InitTypeDef ADC_InitStructure;
+const int adc_gpio_chan[] = { GPIO_ANAChannel0, GPIO_ANAChannel1, GPIO_ANAChannel2, GPIO_ANAChannel3, GPIO_ANAChannel4, GPIO_ANAChannel5, GPIO_ANAChannel6, GPIO_ANAChannel7 };
 
 int platform_adc_check_timer_id( unsigned id, unsigned timer_id )
 {
@@ -582,6 +583,10 @@ static void platform_setup_adcs()
 
 volatile void platform_enable_awd(u8 channel, u16 conversion_type)
 {
+  // Hold current ADC channel configurations
+  u8 ch_tmp[16];
+  memcpy( &ch_tmp, &(ADC->CCR), 16);
+  
   adc_init_ch_state( 0 );
 
   // Change pin function
@@ -601,6 +606,7 @@ volatile void platform_enable_awd(u8 channel, u16 conversion_type)
   ADC_InitStructure.ADC_WDG_Low_Threshold = awd_threshold;
 
   //ADC_InitStructure.ADC_Channel_0_Mode = ADC_LowThreshold_Conversion;
+/*
   ADC_InitStructure.ADC_Channel_0_Mode = ADC_No_Conversion;
   ADC_InitStructure.ADC_Channel_1_Mode = ADC_No_Conversion;
   ADC_InitStructure.ADC_Channel_2_Mode = ADC_No_Conversion;
@@ -609,7 +615,13 @@ volatile void platform_enable_awd(u8 channel, u16 conversion_type)
   ADC_InitStructure.ADC_Channel_5_Mode = ADC_No_Conversion;
   ADC_InitStructure.ADC_Channel_6_Mode = ADC_No_Conversion;
   ADC_InitStructure.ADC_Channel_7_Mode = ADC_No_Conversion;
+*/
 
+  // Restore ADC configurations
+  u16 * ch = &(ADC_InitStructure.ADC_Channel_0_Mode);
+  memcpy( ch, ch_tmp, 16);
+
+  // Setup AWD channels  
   switch (channel)
   {
     case 0: ADC_InitStructure.ADC_Channel_0_Mode = conversion_type; break;
@@ -643,13 +655,6 @@ volatile void platform_disable_awd()
 	ADC->CR &= ~(1<<9);  // Disable AWD interrupt
 }
 
-/*
-void platform_awd_set_high_threshold( u16 threshold )
-{
-  ADC->HTR = threshold & 0x03FF;
-}
-*/
-
 volatile void platform_awd_set_threshold( u16 threshold )
 {
   ADC->LTR = threshold & 0x03FF;
@@ -667,8 +672,6 @@ u32 platform_adc_set_clock( unsigned id, u32 frequency )
 
   return 0;
 }
-
-const int adc_gpio_chan[] = { GPIO_ANAChannel0, GPIO_ANAChannel1, GPIO_ANAChannel2, GPIO_ANAChannel3, GPIO_ANAChannel4, GPIO_ANAChannel5, GPIO_ANAChannel6, GPIO_ANAChannel7 };
 
 // Prepare Hardware Channel
 int platform_adc_update_sequence( )
