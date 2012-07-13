@@ -78,9 +78,6 @@ int platform_init()
   // Common platform initialization code
   cmn_platform_init();
 
-  // Enable RTC
-//  LPC_RTC->CCR = 1 | 1<<4; // Clock enabled, calibration disabled
-
 #if 0
   // Enable timer interrupts
   NVIC_EnableIRQ( TIMER0_IRQn );
