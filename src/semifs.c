@@ -48,6 +48,13 @@ __semihost(int reason, void * arg)
   return value;
 }
 
+#define USR_POWERDOWN    (0x104)
+int mbed_off()
+{
+  uint32_t arg;
+  return __semihost(USR_POWERDOWN, &arg);
+}
+
 static int semifs_find_empty_fd()
 {
   int i;

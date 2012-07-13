@@ -7,11 +7,24 @@
 #include "platform_conf.h"
 #include "auxmods.h"
 #include "LPC17xx.h"
+#include "core_cm3.h"
 
+int mbed_off();
 static int mbed_power_sleep( lua_State *L )
 {  
-  // SCB->SCR |= 0x04; // Deep Sleep
+  // Clear all interrupts
+  NVIC->ICPR[0] = 0xFF;
+  NVIC->ICPR[1] = 7;
+
+  // Disable SysTick Interrupt
+  SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
+
+  mbed_off();
+//  SCB->SCR |= 0x04; // Deep Sleep
   __WFI();
+
+  // Re enable SysTick
+  SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
 
   return 0;
 }
