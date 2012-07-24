@@ -284,9 +284,12 @@
 #define SCS_Val               0x00000020
 #define CLKSRCSEL_Val         0x00000001
 #define PLL0_SETUP            1
-#define PLL0CFG_Val           0x00050063
+//#define PLL0CFG_Val           0x00050063 // ORIG
+#define PLL0CFG_Val           (39 | 1<<16) // 120 MHz
+//#define PLL0CFG_Val           (33 | 1<<16) // 102 MHz
 #define PLL1_SETUP            1
 #define PLL1CFG_Val           0x00000023
+//#define CCLKCFG_Val           0x00000003 // ORIG
 #define CCLKCFG_Val           0x00000003
 #define USBCLKCFG_Val         0x00000000
 #define PCLKSEL0_Val          0x00000000
