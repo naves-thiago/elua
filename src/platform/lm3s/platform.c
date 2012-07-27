@@ -96,7 +96,7 @@ int platform_init()
 {
   // Set the clocking to run from PLL
 #if defined( FORLM3S9B92 ) || defined( FORLM3S9D92 )
-  MAP_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
+  MAP_SysCtlClockSet(SYSCTL_SYSDIV_2_5 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
 #else
   MAP_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_8MHZ);
 #endif
@@ -150,6 +150,8 @@ int platform_init()
   MAP_SysTickIntEnable();
   MAP_IntMasterEnable();
 #endif
+
+  MAP_FlashUsecSet( SysCtlClockGet() );
 
   // All done
   return PLATFORM_OK;
@@ -1307,6 +1309,21 @@ ControlHandler(void *pvCBData, unsigned long ulEvent, unsigned long ulMsgValue,
 }
 
 #endif // BUILD_USB_CDC
+
+// ****************************************************************************
+// Flash access functions
+
+#ifdef BUILD_WOFS
+u32 platform_s_flash_write( const void *from, u32 toaddr, u32 size )
+{
+  return MAP_FlashProgram( ( unsigned long * )from, toaddr, size );
+}
+
+int platform_flash_erase_sector( u32 sector_id )
+{
+  return FlashErase( sector_id * INTERNAL_FLASH_SECTOR_SIZE ) == 0 ? PLATFORM_OK : PLATFORM_ERR;
+}
+#endif // #ifdef BUILD_WOFS
 
 // ****************************************************************************
 // Platform specific modules go here

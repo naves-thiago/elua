@@ -9,6 +9,7 @@
 #include "stacks.h"
 #include "driverlib/sysctl.h"
 #include "elua_int.h"
+#include "flash_conf.h"
 
 // *****************************************************************************
 // Define here what components you want for this platform
@@ -42,6 +43,10 @@
 
 #define PLATFORM_HAS_SYSTIMER
 #define PLATFORM_TMR_COUNTS_DOWN
+
+#ifdef INTERNAL_FLASH_CONFIGURED // this comes from flash_conf.h
+#define BUILD_WOFS
+#endif
 
 // *****************************************************************************
 // UART/Timer IDs configuration data (used in main.c)
@@ -266,6 +271,15 @@
 #else
   #define SRAM_SIZE ( 0x10000 )
 #endif
+
+// Flash data (only for LM3S8962 for now)
+#ifdef ELUA_CPU_LM3S8962
+#define INTERNAL_FLASH_SIZE             ( 256 * 1024 )
+#define INTERNAL_FLASH_WRITE_UNIT_SIZE  4
+#define INTERNAL_FLASH_SECTOR_SIZE      1024
+#define INTERNAL_FLASH_START_ADDRESS    0
+#define BUILD_WOFS
+#endif // #ifdef ELUA_CPU_LM3S8962
 
 // Allocator data: define your free memory zones here in two arrays
 // (start address and end address)
