@@ -66,9 +66,9 @@
 
 // The name of the platform specific libs table
 // FIXME: should handle partial or no inclusion of platform specific modules per conf.py
-#ifdef ENABLE_DISP
+//#ifdef ENABLE_DISP
 #define PS_LIB_TABLE_NAME   "lm3s"
-#endif
+//#endif
 
 #if defined( FORLM3S8962 ) || defined( FORLM3S9B92 ) || defined( FORLM3S9D92 )
 #define CANLINE  _ROM( AUXLIB_CAN, luaopen_can, can_map )
@@ -167,7 +167,8 @@
 // Configuration data
 
 // Virtual timers (0 if not used)
-#define VTMR_NUM_TIMERS       4
+//#define VTMR_NUM_TIMERS       4
+#define VTMR_NUM_TIMERS       0
 #define VTMR_FREQ_HZ          4
 
 // Number of resources (0 if not available/not implemented)

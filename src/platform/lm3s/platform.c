@@ -1328,16 +1328,22 @@ int platform_flash_erase_sector( u32 sector_id )
 // ****************************************************************************
 // Platform specific modules go here
 
-#ifdef ENABLE_DISP
-
 #define MIN_OPT_LEVEL 2
 #include "lrodefs.h"
+
+#ifdef ENABLE_DISP
 extern const LUA_REG_TYPE disp_map[];
+#endif // #ifdef ENABLE_DISP
+
+extern const LUA_REG_TYPE power_map[];
 
 const LUA_REG_TYPE platform_map[] =
 {
 #if LUA_OPTIMIZE_MEMORY > 0
+#ifdef ENABLE_DISP
   { LSTRKEY( "disp" ), LROVAL( disp_map ) },
+#endif // #ifdef ENABLE_DISP
+  { LSTRKEY( "power" ), LROVAL( power_map ) },
 #endif
   { LNILKEY, LNILVAL }
 };
@@ -1349,21 +1355,20 @@ LUALIB_API int luaopen_platform( lua_State *L )
 #else // #if LUA_OPTIMIZE_MEMORY > 0
   luaL_register( L, PS_LIB_TABLE_NAME, platform_map );
 
+#ifdef ENABLE_DISP
   // Setup the new tables inside platform table
   lua_newtable( L );
   luaL_register( L, NULL, disp_map );
   lua_setfield( L, -2, "disp" );
+#endif // #ifdef ENABLE_DISP
 
   return 1;
 #endif // #if LUA_OPTIMIZE_MEMORY > 0
 }
 
-#else // #ifdef ENABLE_DISP
-
+/*
 LUALIB_API int luaopen_platform( lua_State *L )
 {
   return 0;
 }
-
-#endif // #ifdef ENABLE_DISP
-
+*/
