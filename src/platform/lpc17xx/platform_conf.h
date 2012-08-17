@@ -137,11 +137,13 @@ u32 mbed_get_cpu_frequency();
 // Interrupt list
 #define INT_RTC_ALARM         ( ELUA_INT_FIRST_ID + 0 )
 #define INT_TMR_MATCH         ( ELUA_INT_FIRST_ID + 1 )
-#define INT_ELUA_LAST         INT_TMR_MATCH
+#define INT_UART_RX           ( ELUA_INT_FIRST_ID + 2 )
+#define INT_ELUA_LAST         INT_UART_RX
 
 #define PLATFORM_CPU_CONSTANTS\
  _C( INT_RTC_ALARM ), \
- _C( INT_TMR_MATCH )
+ _C( INT_TMR_MATCH ), \
+ _C( INT_UART_RX )
 
 #endif // #ifndef __PLATFORM_CONF_H__
 

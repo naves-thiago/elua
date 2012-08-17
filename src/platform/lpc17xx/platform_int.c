@@ -14,6 +14,67 @@
 #include "mbed_rtc.h"
 #include "core_cm3.h"
 
+// UART Interrupt
+IRQn_Type uart_irqs[4] = {UART0_IRQn, UART1_IRQn, UART2_IRQn, UART3_IRQn}; 
+LPC_UART_TypeDef *uarts[4] = {LPC_UART0, LPC_UART1, LPC_UART2, LPC_UART3}; 
+
+void UART0_IRQHandler(void)
+{
+  if (LPC_UART0->IIR & 0x05) // We have an Receive Data Avaliable Interrupt
+    cmn_int_handler( INT_UART_RX, 0 ); // Add an elua interrupt
+
+  // Interrupt is cleared by reading the data
+}
+
+void UART1_IRQHandler(void)
+{
+  if (LPC_UART1->IIR & 0x05) // We have an Receive Data Avaliable Interrupt
+    cmn_int_handler( INT_UART_RX, 1 ); // Add an elua interrupt
+
+  // Interrupt is cleared by reading the data
+}
+
+static int int_uart_rx_get_status( elua_int_resnum resnum )
+{
+  return NVIC_GetActive( uart_irqs[resnum] );
+}
+
+static int int_uart_rx_set_status( elua_int_resnum resnum, int status )
+{
+  int prev = int_uart_rx_get_status( resnum ); 
+
+  if (status == PLATFORM_CPU_ENABLE)
+  {
+    // Enable uart interrupt
+    uarts[resnum]->IER = 1; // Enable Receive Data Avaliable Interrupt
+    NVIC_ClearPendingIRQ(uart_irqs[resnum]);
+    NVIC_EnableIRQ(uart_irqs[resnum]);
+    NVIC_SetPriority(uart_irqs[resnum], (0x01<<3)); // <- important!
+  }
+  else
+  {
+    // Enable uart interrupt
+    NVIC_DisableIRQ(uart_irqs[resnum]);
+  }
+  
+  return prev;
+}
+
+static int int_uart_rx_get_flag( elua_int_resnum resnum, int clear )
+{
+  int status = (uarts[resnum]->IIR & 0x05) != 0;
+
+  /*
+  if( clear )
+    // Clear interrupt flag
+    LPC_RTC->ILR = 2;
+  */
+
+  return status;
+}
+
+// ****************************************************************************
+
 // RTC Interrupt
 void RTC_IRQHandler(void)
 {
@@ -218,7 +279,8 @@ void TIMER3_IRQHandler(void)
 const elua_int_descriptor elua_int_table[ INT_ELUA_LAST ] = 
 {
   { int_rtc_alarm_set_status, int_rtc_alarm_get_status, int_rtc_alarm_get_flag },
-  { int_tmr_match_set_status, int_tmr_match_get_status, int_tmr_match_get_flag }
+  { int_tmr_match_set_status, int_tmr_match_get_status, int_tmr_match_get_flag },
+  { int_uart_rx_set_status, int_uart_rx_get_status, int_uart_rx_get_flag }
 };
 
 // ****************************************************************************
