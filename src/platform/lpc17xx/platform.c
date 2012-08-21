@@ -27,8 +27,11 @@
 #include "lpc17xx_clkpwr.h"
 #include "lpc17xx_pwm.h"
 #include "lpc17xx_adc.h"
+#include "queue.h"
 
 #define SYSTICKHZ             10
+
+extern queue uart_queue[4];
 
 // ****************************************************************************
 // Platform initialization
@@ -166,7 +169,7 @@ pio_type platform_pio_op( unsigned port, pio_type pinmask, int op )
 // The other UARTs have assignable Rx/Tx pins and thus have to be configured
 // by the user
 
-static LPC_UART_TypeDef* const uart[] = { LPC_UART0, LPC_UART1, LPC_UART2, LPC_UART3 };
+LPC_UART_TypeDef* const uart[] = { LPC_UART0, LPC_UART1, LPC_UART2, LPC_UART3 };
 
 u32 platform_uart_setup( unsigned id, u32 baud, int databits, int parity, int stopbits )
 {
@@ -247,6 +250,10 @@ void platform_s_uart_send( unsigned id, u8 data )
 
 int platform_s_uart_recv( unsigned id, timer_data_type timeout )
 {
+  // Check first if is there a char waiting on the FIFO
+  if (count(&(uart_queue[id])) > 0)
+    return dequeue(&(uart_queue[id]));
+
   u8 buffer;
   
   if( timeout == 0 )

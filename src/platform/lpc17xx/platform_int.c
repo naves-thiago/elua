@@ -13,25 +13,61 @@
 #include "LPC17xx_timer.h"
 #include "mbed_rtc.h"
 #include "core_cm3.h"
+#include "queue.h"
 
 // UART Interrupt
 IRQn_Type uart_irqs[4] = {UART0_IRQn, UART1_IRQn, UART2_IRQn, UART3_IRQn}; 
-LPC_UART_TypeDef *uarts[4] = {LPC_UART0, LPC_UART1, LPC_UART2, LPC_UART3}; 
+extern LPC_UART_TypeDef * uart[4];
+queue uart_queue[4];
 
+/*
 void UART0_IRQHandler(void)
 {
   if (LPC_UART0->IIR & 0x05) // We have an Receive Data Avaliable Interrupt
     cmn_int_handler( INT_UART_RX, 0 ); // Add an elua interrupt
 
+  // Enqueue the received char
   // Interrupt is cleared by reading the data
+  enqueue(&(uart_queue[0]), LPC_UART0->RBR);
+
+  NVIC_ClearPendingIRQ(UART0_IRQn);
 }
+*/
 
 void UART1_IRQHandler(void)
 {
   if (LPC_UART1->IIR & 0x05) // We have an Receive Data Avaliable Interrupt
     cmn_int_handler( INT_UART_RX, 1 ); // Add an elua interrupt
 
+  // Enqueue the received char
   // Interrupt is cleared by reading the data
+  enqueue(&(uart_queue[1]), LPC_UART1->RBR);
+
+  NVIC_ClearPendingIRQ(UART1_IRQn);
+}
+
+void UART2_IRQHandler(void)
+{
+  if (LPC_UART2->IIR & 0x05) // We have an Receive Data Avaliable Interrupt
+    cmn_int_handler( INT_UART_RX, 2 ); // Add an elua interrupt
+
+  // Enqueue the received char
+  // Interrupt is cleared by reading the data
+  enqueue(&(uart_queue[2]), LPC_UART2->RBR);
+
+  NVIC_ClearPendingIRQ(UART2_IRQn);
+}
+
+void UART3_IRQHandler(void)
+{
+  if (LPC_UART3->IIR & 0x05) // We have an Receive Data Avaliable Interrupt
+    cmn_int_handler( INT_UART_RX, 3 ); // Add an elua interrupt
+
+  // Enqueue the received char
+  // Interrupt is cleared by reading the data
+  enqueue(&(uart_queue[3]), LPC_UART3->RBR);
+
+  NVIC_ClearPendingIRQ(UART3_IRQn);
 }
 
 static int int_uart_rx_get_status( elua_int_resnum resnum )
@@ -46,10 +82,10 @@ static int int_uart_rx_set_status( elua_int_resnum resnum, int status )
   if (status == PLATFORM_CPU_ENABLE)
   {
     // Enable uart interrupt
-    uarts[resnum]->IER = 1; // Enable Receive Data Avaliable Interrupt
+    uart[resnum]->IER = 1; // Enable Receive Data Avaliable Interrupt
     NVIC_ClearPendingIRQ(uart_irqs[resnum]);
     NVIC_EnableIRQ(uart_irqs[resnum]);
-    NVIC_SetPriority(uart_irqs[resnum], (0x01<<3)); // <- important!
+//    NVIC_SetPriority(uart_irqs[resnum], (0x01<<3)); // <- important!
   }
   else
   {
@@ -62,7 +98,7 @@ static int int_uart_rx_set_status( elua_int_resnum resnum, int status )
 
 static int int_uart_rx_get_flag( elua_int_resnum resnum, int clear )
 {
-  int status = (uarts[resnum]->IIR & 0x05) != 0;
+  int status = (uart[resnum]->IIR & 0x05) != 0;
 
   /*
   if( clear )
@@ -288,6 +324,12 @@ const elua_int_descriptor elua_int_table[ INT_ELUA_LAST ] =
 
 void platform_int_init()
 {
+  // Init queues
+  init_queue(&(uart_queue[0])); 
+  init_queue(&(uart_queue[1])); 
+  init_queue(&(uart_queue[2])); 
+  init_queue(&(uart_queue[3])); 
+
   // Clear RTC interrupt flag
   LPC_RTC->ILR = 2;
   
