@@ -12,10 +12,13 @@
 // Define here what components you want for this platform
 
 #define BUILD_SHELL
+#define BUILD_ADVANCED_SHELL
 #define BUILD_ROMFS
 #define BUILD_CON_GENERIC
 #define BUILD_TERM
 //#define BUILD_RFS
+#define BUILD_WOFS
+#define BUILD_MMCFS
 
 #define TERM_LINES    25
 #define TERM_COLS     80

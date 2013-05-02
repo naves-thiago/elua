@@ -16,7 +16,7 @@
 #define BUILD_XMODEM
 #define BUILD_SHELL
 #define BUILD_ROMFS
-//#define BUILD_MMCFS
+#define BUILD_MMCFS
 #define BUILD_TERM
 //#define BUILD_UIP
 //#define BUILD_DHCPC
@@ -171,6 +171,14 @@ u32 platform_s_cpu_get_frequency();
 #define SRAM_SIZE             ( 64 * 1024 )
 #define MEM_START_ADDRESS     { ( void* )end }
 #define MEM_END_ADDRESS       { ( void* )( SRAM_BASE + SRAM_SIZE - STACK_SIZE_TOTAL - 1 ) }
+
+// Flash data (only for STM32F103RE for now)
+#ifdef ELUA_CPU_STM32F103RE
+#define INTERNAL_FLASH_SIZE             ( 512 * 1024 )
+#define INTERNAL_FLASH_SECTOR_SIZE      2048
+#define INTERNAL_FLASH_START_ADDRESS    0x08000000
+#define BUILD_WOFS
+#endif // #ifdef ELUA_CPU_STM32F103RE
 
 // Interrupt queue size
 #define PLATFORM_INT_QUEUE_LOG_SIZE 5
