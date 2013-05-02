@@ -225,7 +225,7 @@ void platform_s_uart_send( unsigned id, u8 data )
   USART_Write( base, data, 0 );
 }
 
-int platform_s_uart_recv( unsigned id, s32 timeout )
+int platform_s_uart_recv( unsigned id, timer_data_type timeout )
 {
   AT91S_USART* base = id == 0 ? AT91C_BASE_US0 : AT91C_BASE_US1;  
     
@@ -273,7 +273,7 @@ static u32 platform_timer_set_clock( unsigned id, u32 clock )
   return BOARD_MCK / clkdivs[ mini ];
 }
 
-void platform_s_timer_delay( unsigned id, u32 delay_us )
+void platform_s_timer_delay( unsigned id, timer_data_type delay_us )
 {
   AT91S_TC* base = ( AT91S_TC* )timer_base[ id ];  
   u32 freq;
@@ -289,7 +289,7 @@ void platform_s_timer_delay( unsigned id, u32 delay_us )
   while( base->TC_CV < final );  
 }
 
-u32 platform_s_timer_op( unsigned id, int op, u32 data )
+timer_data_type platform_s_timer_op( unsigned id, int op, timer_data_type data )
 {
   u32 res = 0;
   AT91S_TC* base = ( AT91S_TC* )timer_base[ id ];
@@ -336,7 +336,7 @@ u32 platform_s_timer_op( unsigned id, int op, u32 data )
 static const Pin pwm_pins[] = { PIN_PWMC_PWM0, PIN_PWMC_PWM1, PIN_PWMC_PWM2  };
 
 // Helper function: return the PWM clock
-static u32 platform_pwm_get_clock( unsigned id )
+u32 platform_pwm_get_clock( unsigned id )
 {
   u32 cfg = AT91C_BASE_PWMC->PWMC_CH[ id ].PWMC_CMR;
   u16 clkdata;
@@ -356,7 +356,7 @@ static u32 platform_pwm_get_clock( unsigned id )
 }
 
 // Helper function: set the PWM clock
-static u32 platform_pwm_set_clock( unsigned id, u32 clock )
+u32 platform_pwm_set_clock( unsigned id, u32 clock )
 {
   if( id < 2 )
     PWMC_ConfigureClocks( clock, 0, BOARD_MCK );
@@ -383,6 +383,17 @@ u32 platform_pwm_setup( unsigned id, u32 frequency, unsigned duty )
   return pwmclk / period;
 }
 
+void platform_pwm_start( unsigned id )
+{
+  PIO_Configure( pwm_pins + id, 1 );    
+}
+
+void platform_pwm_stop( unsigned id )
+{
+  platform_pio_op( 1, 1 << ( 19 + id ), PLATFORM_IO_PIN_DIR_INPUT );
+}
+
+#if 0
 u32 platform_pwm_op( unsigned id, int op, u32 data )
 {
   u32 res = 0;
@@ -406,7 +417,8 @@ u32 platform_pwm_op( unsigned id, int op, u32 data )
       platform_pio_op( 1, 1 << ( 19 + id ), PLATFORM_IO_PIN_DIR_INPUT );
       break;
   }
-  
   return res;
 }
+
+#endif
 
