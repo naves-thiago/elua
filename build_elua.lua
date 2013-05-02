@@ -156,6 +156,7 @@ toolchain_list[ 'devkitarm' ] = toolchain_list[ 'arm-eabi-gcc' ]
 -- (the one that will be used if none is specified)
 local platform_list =
 {
+  at91sam7s = { cpus = { 'AT91SAM7S256' }, toolchains = { 'arm-gcc', 'codesourcery', 'devkitarm', 'arm-eabi-gcc' }, big_endian = false },
   at91sam7x = { cpus = { 'AT91SAM7X256', 'AT91SAM7X512' }, toolchains = { 'arm-gcc', 'codesourcery', 'devkitarm', 'arm-eabi-gcc' }, big_endian = false },
   lm3s = { cpus = { 'LM3S1968', 'LM3S8962', 'LM3S6965', 'LM3S6918', 'LM3S9B92', 'LM3S9D92' }, toolchains = { 'arm-gcc', 'codesourcery', 'devkitarm', 'arm-eabi-gcc' }, big_endian = false },
   str9 = { cpus = { 'STR912FAW44' }, toolchains = { 'arm-gcc', 'codesourcery', 'devkitarm', 'arm-eabi-gcc' }, big_endian = false },
@@ -193,6 +194,7 @@ local board_list =
   [ 'MBED' ]            = { 'LPC1768' },
   [ 'MIZAR32' ]         = { 'AT32UC3A0256', 'AT32UC3A0512', 'AT32UC3A0128' },
   [ 'NETDUINO' ]        = { 'AT91SAM7X512' },
+  [ 'AT91SAM7S-EK' ]    = { 'AT91SAM7S256' },
   [ 'EK-LM3S9D92' ]     = { 'LM3S9D92' }
 }
 
