@@ -130,7 +130,9 @@ local menu =
           { "Linenoise", "linenoise.html" },
           { "Cross-compiling", "using.html#cross" },
           { "LuaRPC", "using.html#rpc" },
-          { "The serial multiplexer", "sermux.html" }
+          { "The serial multiplexer", "sermux.html" },
+          { nil, "simple_shell.html", nil, "Simple shell" },
+          { nil, "advanced_shell.html", nil, "Advanced shell" },
         },
       },
       { { "Code examples", "Exemplos de Código" }, "examples.html" },
@@ -139,7 +141,8 @@ local menu =
         {
           { { "Read-Only FS in MCU Flash", "O ROM File System em Flash" }, "arch_romfs.html" },
           { "R/W FAT FS in SD/MMC Cards", "fatfs.html" },
-          { "Remote file system (RFS)", "arch_rfs.html" }
+          { "Remote file system (RFS)", "arch_rfs.html" },
+          { "Write once file system (WOFS)", "arch_wofs.html" },
         }
       },
       { "eLua interrupt handlers", "inthandlers.html",
@@ -150,6 +153,19 @@ local menu =
       },
       { { "Building eLua", "Build de eLua" }, "building.html",
         {
+          { "Configuring the image", "configurator.html",
+            {
+              { "CPU", "configurator.html#config_cpu" },
+              { "Components", "configurator.html#config_components" },
+              { "Configuration", "configurator.html#config_config" },
+              { "Modules", "configurator.html#config_modules" },
+              { "Headers", "configurator.html#config_headers" },
+              { "Macros", "configurator.html#config_macros" },
+              { "CPU constants", "configurator.html#config_cpuconstants" },
+              { "Build options", "configurator.html#config_build" },
+              { "Customizing", "configurator.html#config_customize" },
+            },
+          },
           { "Building eLua in Linux", "building_unix.html" },
           { "Building eLua in Windows", "building_win.html" },
         },  

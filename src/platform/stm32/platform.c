@@ -93,6 +93,9 @@ int platform_init()
     /* Capture error */ 
     while (1);
   }
+
+  // Flash initialization (for WOFS)
+  FLASH_Unlock();
   
   cmn_platform_init();
 
@@ -1278,44 +1281,32 @@ int platform_adc_start_sequence( )
 #endif // ifdef BUILD_ADC
 
 // ****************************************************************************
-// Platform specific modules go here
+// Flash access functions
 
-#ifdef ENABLE_ENC
-
-#define MIN_OPT_LEVEL 2
-#include "lrodefs.h"
-extern const LUA_REG_TYPE enc_map[];
-
-const LUA_REG_TYPE platform_map[] =
+#ifdef BUILD_WOFS
+u32 platform_s_flash_write( const void *from, u32 toaddr, u32 size )
 {
-#if LUA_OPTIMIZE_MEMORY > 0
-  { LSTRKEY( "enc" ), LROVAL( enc_map ) },
-#endif
-  { LNILKEY, LNILVAL }
-};
+  u32 ssize = 0;
+  const u16 *psrc = ( const u16* )from;
+  FLASH_Status flstat;
 
-LUALIB_API int luaopen_platform( lua_State *L )
-{
-#if LUA_OPTIMIZE_MEMORY > 0
-  return 0;
-#else // #if LUA_OPTIMIZE_MEMORY > 0
-  luaL_register( L, PS_LIB_TABLE_NAME, platform_map );
-
-  // Setup the new tables inside platform table
-  lua_newtable( L );
-  luaL_register( L, NULL, enc_map );
-  lua_setfield( L, -2, "enc" );
-
-  return 1;
-#endif // #if LUA_OPTIMIZE_MEMORY > 0
+  while( ssize < size )
+  {
+    if( ( flstat = FLASH_ProgramHalfWord( toaddr, *psrc ++ ) ) != FLASH_COMPLETE )
+    {
+      printf( "ERROR in platform_s_flash_write: stat=%d at %08X\n", ( int )flstat, ( unsigned )toaddr );
+      break;
+    }
+    toaddr += 2;
+    ssize += 2;
+  }
+  return ssize;
 }
 
-#else // #ifdef ENABLE_ENC
-
-LUALIB_API int luaopen_platform( lua_State *L )
+int platform_flash_erase_sector( u32 sector_id )
 {
-  return 0;
+  return FLASH_ErasePage( sector_id * INTERNAL_FLASH_SECTOR_SIZE + INTERNAL_FLASH_START_ADDRESS ) == FLASH_COMPLETE ? PLATFORM_OK : PLATFORM_ERR;
 }
 
-#endif // #ifdef ENABLE_ENC
+#endif // #ifdef BUILD_WOFS
 

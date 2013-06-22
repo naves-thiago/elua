@@ -1,6 +1,6 @@
 -- Configuration file for the AVR32 microcontrollers
 
-specific_files = "crt0.s trampoline.s platform.c exception.s intc.c pm.c flashc.c pm_conf_clocks.c usart.c gpio.c tc.c spi.c platform_int.c adc.c pwm.c i2c.c ethernet.c lcd.c"
+specific_files = "crt0.s trampoline.s platform.c exception.s intc.c pm.c flashc.c pm_conf_clocks.c usart.c gpio.c tc.c spi.c platform_int.c adc.c pwm.c i2c.c ethernet.c lcd.c rtc.c usb-cdc.c"
 addm( "FORAVR32" )
 
 -- See board.h for possible BOARD values.
@@ -9,7 +9,7 @@ if comp.board:upper()  == "ATEVK1100" then
   addm( 'BOARD=1' )
 elseif comp.board:upper()  == "ATEVK1101" then
   addm( 'BOARD=2' )
-elseif comp.board:upper()  == "MIZAR32" then
+elseif comp.board:upper():sub( 1,7 )  == "MIZAR32" then
   specific_files = specific_files .. " sdramc.c"
   addm( 'BOARD=98' )
 else
@@ -39,6 +39,7 @@ addlib( { 'c','gcc','m' } )
 addcf( sf( '-mpart=%s', comp.cpu:sub( 5 ):lower() ) )
 addaf( sf( '-mpart=%s', comp.cpu:sub( 5 ):lower() ) )
 addlf( '-Wl,-e,crt0' )
+if comp.bootloader == "emblod" then addm( "ELUA_FIRMWARE_SIZE=0x8000" ) else addm( "ELUA_FIRMWARE_SIZE=0" ) end
 
 -- Toolset data
 tools.avr32 = {}

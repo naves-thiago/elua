@@ -40,21 +40,7 @@ char *boot_order[] = {
 
 extern char etext[];
 
-
 #ifdef ELUA_BOOT_RPC
-
-#ifndef RPC_UART_ID
-  #define RPC_UART_ID     CON_UART_ID
-#endif
-
-#ifndef RPC_TIMER_ID
-  #define RPC_TIMER_ID    PLATFORM_TIMER_SYS_ID
-#endif
-
-#ifndef RPC_UART_SPEED
-  #define RPC_UART_SPEED  CON_UART_SPEED
-#endif
-
 void boot_rpc( void )
 {
   lua_State *L = lua_open();
@@ -70,7 +56,7 @@ void boot_rpc( void )
   lua_pushnumber( L, RPC_TIMER_ID );
   lua_pcall( L, 2, 0, 0 );
 }
-#endif
+#endif // #ifdef ELUA_BOOT_RPC
 
 // ****************************************************************************
 //  Program entry point
@@ -91,16 +77,16 @@ int main( void )
   dm_init();
 
   // Register the ROM filesystem
-  dm_register( romfs_init() );
+  romfs_init();
 
   // Register the MMC filesystem
-  dm_register( mmcfs_init() );
+  mmcfs_init();
 
   // Register the Semihosting filesystem
-  dm_register( semifs_init() );
+  semifs_init();
 
   // Register the remote filesystem
-  dm_register( remotefs_init() );
+  remotefs_init();
 
   // Search for autorun files in the defined order and execute the 1st if found
   for( i = 0; i < sizeof( boot_order ) / sizeof( *boot_order ); i++ )

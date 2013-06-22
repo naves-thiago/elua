@@ -10,14 +10,13 @@ if cpu == 'LM3S9B92' or board == 'LM3S9D92' then
   addi( sf( 'src/platform/%s/usblib/device', platform ) )
 end
 
-specific_files = "startup_gcc.c platform.c platform_int.c"
+specific_files = "startup_gcc.c platform.c platform_int.c lm3s_pio.c"
 local fwlib_files = utils.get_files( "src/platform/" .. platform .. "/driverlib", ".*%.c$" )
 
 
 local board = comp.board:upper()
 if board == 'EK-LM3S1968' or board == 'EK-LM3S6965' or board == 'EK-LM3S8962' then
   specific_files = specific_files .. " rit128x96x4.c disp.c"
-  addm 'ENABLE_DISP' 
 end
 
 -- The default for the Eagle 100 board is to start the image at 0x2000,
@@ -34,7 +33,7 @@ end
 
 if board == 'EK-LM3S9B92'  then
    ldscript = "lm3s-9b92.ld"
-elseif board == 'SOLDERCORE' then
+elseif board == 'SOLDERCORE' or board == "EK-LM3S9D92" then
    ldscript = "lm3s-9d92.ld"
 else
    ldscript = "lm3s.ld"
